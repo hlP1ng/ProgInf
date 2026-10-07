@@ -5,6 +5,12 @@
 #include <QByteArray>
 #include <cstdint>
 
+// Подключаем модули графики и анимации Qt
+#include <QGraphicsScene>
+#include <QGraphicsRectItem>
+#include <QGraphicsTextItem>
+#include <QVariantAnimation>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -18,7 +24,6 @@ public:
     ~MainWindow();
 
 private slots:
-    // Спусковые слоты для кнопок (вызываются при клике)
     void on_btnSend_clicked();
     void on_btnNoise_clicked();
     void on_btnCheck_clicked();
@@ -26,14 +31,21 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    // Данные пакетов
-    QByteArray originalPacket; // Исходный пакет
-    QByteArray receivedPacket; // Принятый пакет (с возможной помехой)
+    QByteArray originalPacket;
+    QByteArray receivedPacket;
 
-    // Вспомогательные функции
-    uint16_t crc16(const QByteArray &data);     // Расчёт CRC16
-    QString packetToHex(const QByteArray &pkt); // Перевод байтов в Hex-строку
-    void log(const QString &message);          // Запись в QTextEdit
+    // --- ЭЛЕМЕНТЫ ГРАФИКИ И АНИМАЦИИ ---
+    QGraphicsScene *scene;                // Графическая сцена
+    QGraphicsRectItem *packetItem;        // Пакет (летающий прямоугольник)
+    QGraphicsTextItem *packetTextItem;    // Текст внутри пакета
+    QVariantAnimation *flyAnimation;      // Анимация полета пакета
+
+    uint16_t crc16(const QByteArray &data);
+    QString packetToHex(const QByteArray &pkt);
+    void log(const QString &message);
+
+    // Функция запуска анимации полета
+    void startFlyAnimation();
 };
 
 #endif // MAINWINDOW_H
