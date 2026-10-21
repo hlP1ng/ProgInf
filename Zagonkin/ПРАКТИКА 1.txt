@@ -1,0 +1,274 @@
+ПРАКТИКА 1
+
+
+mainwindow.cpp
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QGraphicsScene>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsRectItem>
+#include <QTimer>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    void on_btnStart_clicked();
+    void updateAnimation();
+
+private:
+    Ui::MainWindow *ui;
+
+    QGraphicsScene *scene;
+    QGraphicsEllipseItem *drone;
+    QGraphicsRectItem *ground;
+    QTimer *timer;
+
+    double droneX;
+    double droneY;
+
+    QString finalText; // <--- ДОБАВЬ ЭТУ СТРОКУ
+
+    void printText(const QString& text);
+};
+
+#endif // MAINWINDOW_H
+
+mainwindow.h
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include "battery.h"
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    void on_btnBattery1_clicked();
+    void on_btnBattery2_clicked();
+    void on_btnBattery3_clicked();
+
+private:
+    Ui::MainWindow *ui;
+
+    void setupTable();
+    void addBatteryToTable(const Battery& b);
+
+    // --- Новые методы ---
+    void updateGraphics(const Battery& b); // Отрисовка и ProgressBar
+};
+
+#endif // MAINWINDOW_H
+
+
+battery.h
+#ifndef BATTERY_H
+#define BATTERY_H
+
+#include <string>
+
+class Battery {
+private:
+    int cell_count; //int - целое число
+    double voltage; //double - дробное число
+    double capacity_mAh;
+
+public:
+    Battery(); //конструктор
+    Battery(int cells, double initial_voltage, double capacity); //принимает параметры
+
+    double get_percentage() const;
+    bool is_low() const;
+    void set_voltage(double new_voltage);
+    void print_info() const;
+    std::string get_status() const;
+
+    // Эти три метода нужны, чтобы окно могло прочитать данные
+    int get_cells() const { return cell_count; }
+    double get_voltage() const { return voltage; }
+    double get_capacity() const { return capacity_mAh; }
+};
+
+#endif // BATTERY_H
+
+
+battery.cpp
+#include "battery.h"
+#include <iostream>
+
+Battery::Battery() //дефолтный конструктор
+    : cell_count(4),
+    voltage(0.0),
+    capacity_mAh(5000.0) {
+}
+
+Battery::Battery(int cells, double initial_voltage, double capacity)
+    : cell_count(cells),
+    voltage(initial_voltage),
+    capacity_mAh(capacity) {
+    if (cell_count < 1) {
+        cell_count = 1;
+    }
+    if (capacity_mAh < 0.0) {
+        capacity_mAh = 0.0;
+    }
+}
+
+double Battery::get_percentage() const {
+    const double min_voltage = 3.0 * cell_count;
+    const double max_voltage = 4.2 * cell_count;
+
+    double result = (voltage - min_voltage) / (max_voltage - min_voltage) * 100.0;
+
+    if (result < 0.0) {
+        result = 0.0;
+    }
+    if (result > 100.0) {
+        result = 100.0;
+    }
+    return result;
+}
+
+bool Battery::is_low() const {
+    return get_percentage() < 20.0;
+}
+
+void Battery::set_voltage(double new_voltage) {
+    if (new_voltage < 0.0) {
+        std::cout << "Invalid voltage\n";
+        return;
+    }
+    voltage = new_voltage;
+}
+
+void Battery::print_info() const {
+    std::cout << "Cells: " << cell_count << '\n';
+    std::cout << "Voltage: " << voltage << " V\n";
+    std::cout << "Capacity: " << capacity_mAh << " mAh\n";
+    std::cout << "Charge: " << get_percentage() << "%\n";
+    std::cout << "Status: " << get_status() << '\n';
+}
+
+std::string Battery::get_status() const {
+    double p = get_percentage();
+    if (p < 10.0) return "CRITICAL";
+    if (p < 20.0) return "LOW";
+    if (p <= 80.0) return "NORMAL";
+    return "FULL";
+}
+
+
+main.cpp
+#include "mainwindow.h"
+#include <QApplication>
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+    return a.exec();
+}
+
+mainwindow.ui
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>270</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>10</y>
+      <width>291</width>
+      <height>221</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="btnBattery1">
+         <property name="text">
+          <string>Батарея 1</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnBattery2">
+         <property name="text">
+          <string>Батарея 2</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnBattery3">
+         <property name="text">
+          <string>Батарея 3</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QProgressBar" name="progressBarCharge">
+       <property name="value">
+        <number>24</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTableWidget" name="tableOutput"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>400</width>
+     <height>17</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+

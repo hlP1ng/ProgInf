@@ -1,0 +1,332 @@
+ПРАКТИКА 2
+
+mainwindow.h
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QGraphicsScene>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsRectItem>
+#include <QTimer>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    void on_btnStart_clicked();
+    void updateAnimation();
+
+private:
+    Ui::MainWindow *ui;
+
+    QGraphicsScene *scene;
+    QGraphicsEllipseItem *drone;
+    QGraphicsRectItem *ground;
+    QTimer *timer;
+
+    double droneX;
+    double droneY;
+
+    QString finalText; // <--- ДОБАВЬ ЭТУ СТРОКУ
+
+    void printText(const QString& text);
+};
+
+#endif // MAINWINDOW_H
+
+
+telemetryrecord.h
+#ifndef TELEMETRYRECORD_H
+#define TELEMETRYRECORD_H
+
+#include <string>
+#include <vector>
+#include <map>
+
+class TelemetryRecord {
+private:
+    std::string drone_name;
+    std::vector<double> altitude_history;
+    std::map<std::string, double> parameters;
+
+public:
+    TelemetryRecord(const std::string& name);
+
+    void add_altitude(double altitude);
+    void set_parameter(const std::string& name, double value);
+    double average_altitude() const;
+    double get_parameter(const std::string& name) const;
+
+    std::string getName() const { return drone_name; }
+};
+
+#endif // TELEMETRYRECORD_H
+
+
+main.cpp
+#include "mainwindow.h"
+#include <QApplication>
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+    return a.exec();
+}
+
+
+mainwindow.cpp
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "vector3d.h"
+#include "telemetryrecord.h"
+#include <QPen>
+#include <QBrush>
+#include <QString>
+
+// Вспомогательная функция для превращения вектора в строку
+QString vecToString(const Vector3D& v) {
+    return QString("(%1, %2, %3)").arg(v.getX()).arg(v.getY()).arg(v.getZ());
+}
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , droneX(50), droneY(150) // Стартовая позиция (слева, повыше земли)
+{
+    ui->setupUi(this);
+    setWindowTitle("Наземная станция управления БПЛА");
+
+    // Настраиваем сцену
+    scene = new QGraphicsScene(this);
+    // Делаем сцену бесконечно большой, чтобы она заполняла весь GraphicsView
+    scene->setSceneRect(0, 0, 600, 400);
+    ui->graphicsView->setScene(scene);
+
+    // Добавляем красивый текст прямо на графическую сцену
+    QFont titleFont("Arial", 16, QFont::Bold);
+    QGraphicsTextItem *sceneTitle = scene->addText("СИМУЛЯЦИЯ ПОЛЕТА БПЛА", titleFont);
+    sceneTitle->setDefaultTextColor(Qt::white);
+    // Ставим текст по центру верхней части экрана
+    sceneTitle->setPos(150, 10);
+
+    // Рисуем землю
+    ground = scene->addRect(0, 350, 600, 50, QPen(Qt::NoPen), QBrush(QColor(34, 139, 34)));
+
+    // Рисуем дрона
+    drone = scene->addEllipse(droneX, droneY, 20, 20, QPen(Qt::black), QBrush(Qt::red));
+
+    // Таймер для анимации
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindow::updateAnimation);
+
+    // Выводим приветствие
+    ui->textOutput->append("<h2 align='center' style='color: #00FFFF;'>ДАННЫЕ О ТЕЛЕМЕТРИИ</h2>");
+    printText("=== СИМУЛЯЦИЯ ПОЛЁТА БПЛА ===");
+    printText("Нажмите 'Запустить полёт' для старта.\n");
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+// Вспомогательная функция вывода текста (с HTML-форматированием)
+void MainWindow::printText(const QString& text)
+{
+    ui->textOutput->append("<div align='center' style='font-family: Consolas; font-size: 12pt; color: white;'>" + text + "</div>");
+}
+
+void MainWindow::on_btnStart_clicked()
+{
+    if (timer->isActive()) return;
+
+    // Очищаем поле и выводим только статус
+    ui->textOutput->clear();
+    ui->textOutput->append("<h2 align='center' style='color: #00FFFF;'>ДАННЫЕ О ТЕЛЕМЕТРИИ</h2>");
+    printText("--- ВЫПОЛНЕНИЕ МИССИИ ---");
+
+    // --- СЧИТАЕМ МАТЕМАТИКУ ЗАРАНЕЕ И СОХРАНЯЕМ В СТРОКУ ---
+    finalText = "";
+
+    // Вариант 1
+    Vector3D drone_velocity(10.0, 4.0, -1.0);
+    Vector3D wind_velocity(2.0, -1.0, 0.0);
+    Vector3D ground_velocity = drone_velocity + wind_velocity;
+    Vector3D correction = ground_velocity * 0.8;
+
+    finalText += "Воздушная скорость: " + vecToString(drone_velocity) + "\n";
+    finalText += "Скорость ветра: " + vecToString(wind_velocity) + "\n";
+    finalText += "Скорость относительно земли: " + vecToString(ground_velocity) + "\n";
+    finalText += "Модуль скорости: " + QString::number(ground_velocity.length(), 'f', 2) + " м/с\n";
+
+    // Вариант 2
+    Vector3D start(0.0, 0.0, 100.0);
+    Vector3D finish(300.0, 200.0, 150.0);
+    Vector3D displacement = finish - start;
+
+    finalText += "Смещение по X: " + QString::number(displacement.getX()) + " м\n";
+    finalText += "Смещение по Y: " + QString::number(displacement.getY()) + " м\n";
+    finalText += "Изменение высоты: " + QString::number(displacement.getZ()) + " м\n";
+    finalText += "Длина перемещения: " + QString::number(displacement.length(), 'f', 2) + " м\n";
+
+    // Телеметрия
+    TelemetryRecord record("Survey-01");
+    record.add_altitude(100.0);
+    record.add_altitude(120.0);
+    record.add_altitude(140.0);
+
+    record.set_parameter("speed", ground_velocity.length());
+    record.set_parameter("battery", 84.0);
+    record.set_parameter("temperature", 38.2);
+    record.set_parameter("signal", 91.0);
+
+    finalText += "\n[Телеметрия: " + QString::fromStdString(record.getName()) + "]\n";
+    finalText += "Средняя высота: " + QString::number(record.average_altitude(), 'f', 1) + " м\n";
+    finalText += "Скорость: " + QString::number(record.get_parameter("speed"), 'f', 1) + " м/с\n";
+    finalText += "Батарея: " + QString::number(record.get_parameter("battery"), 'f', 0) + "%\n";
+    finalText += "Сигнал: " + QString::number(record.get_parameter("signal"), 'f', 0) + "%\n";
+
+    // Сброс и старт
+    droneX = 50;
+    droneY = 150;
+    drone->setPos(droneX, droneY);
+    timer->start(30);
+}
+
+void MainWindow::updateAnimation()
+{
+    droneX += 3;
+    droneY -= 0.2;
+
+    if (droneX > 550) {
+        droneX = 550;
+        timer->stop();
+
+        // Выводим всё, когда дрон долетел
+        // Выводим всё, когда дрон долетел
+        ui->textOutput->clear();
+        ui->textOutput->append("<h2 align='center' style='color: #00FFFF;'>ОТЧЕТ О ПОЛЕТЕ</h2>");
+        printText("--- ДРОН ДОСТИГ ЦЕЛИ. МИССИЯ ЗАВЕРШЕНА ---");
+
+        // Заменяем все \n на <br>, чтобы текст не слипался в одну строку
+        QString htmlText = finalText;
+        htmlText.replace("\n", "<br>");
+
+        printText(htmlText);
+
+        return;
+    }
+
+    drone->setPos(droneX, droneY);
+}
+
+telemetyrecord.cpp
+#include "telemetryrecord.h"
+
+TelemetryRecord::TelemetryRecord(const std::string& name) : drone_name(name) {}
+
+void TelemetryRecord::add_altitude(double altitude) {
+    if (altitude >= 0.0) {
+        altitude_history.push_back(altitude);
+    }
+}
+
+void TelemetryRecord::set_parameter(const std::string& name, double value) {
+    parameters[name] = value;
+}
+
+double TelemetryRecord::average_altitude() const {
+    if (altitude_history.empty()) return 0.0;
+    double sum = 0.0;
+    for (double val : altitude_history) sum += val;
+    return sum / altitude_history.size();
+}
+
+double TelemetryRecord::get_parameter(const std::string& name) const {
+    auto it = parameters.find(name);
+    if (it != parameters.end()) return it->second;
+    return 0.0;
+}
+
+mainwindow.ui
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1195</width>
+    <height>652</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>0</y>
+      <width>661</width>
+      <height>611</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QGraphicsView" name="graphicsView"/>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="textOutput">
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnStart">
+       <property name="text">
+        <string>ЗАПУСК</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1195</width>
+     <height>17</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+
