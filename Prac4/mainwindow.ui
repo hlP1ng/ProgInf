@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1150</width>
+    <height>780</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>НСУ БПЛА - MAVLink Ground Station (Вариант 3)</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayoutMain" stretch="1,2">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayoutLeft">
+      <item>
+       <widget class="QGroupBox" name="groupLink">
+        <property name="title">
+         <string>Канал связи UDP (Порт 14540)</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayoutLink">
+         <item>
+          <widget class="QLabel" name="labelLinkStatus">
+           <property name="text">
+            <string>Связь отсутствует</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelSender">
+           <property name="text">
+            <string>-</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelPackets">
+           <property name="text">
+            <string>Принято: 0 | Потеряно: 0 | Ошибок: 0</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayoutLinkBtns">
+           <item>
+            <widget class="QPushButton" name="btnStartLink">
+             <property name="text">
+              <string>Открыть UDP-порт</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnStopLink">
+             <property name="text">
+              <string>Закрыть UDP-порт</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupTelemetry">
+        <property name="title">
+         <string>Телеметрия БПЛА</string>
+        </property>
+        <layout class="QFormLayout" name="formLayoutTelemetry">
+         <item row="0" column="0">
+          <widget class="QLabel" name="lblLatTitle">
+           <property name="text">
+            <string>Широта:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="labelLatitude">
+           <property name="text">
+            <string>0.0000000</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lblLonTitle">
+           <property name="text">
+            <string>Долгота:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="labelLongitude">
+           <property name="text">
+            <string>0.0000000</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lblAltTitle">
+           <property name="text">
+            <string>Высота:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="labelAltitude">
+           <property name="text">
+            <string>0.0 м</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="lblModeTitle">
+           <property name="text">
+            <string>Режим полета:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLabel" name="labelFlightMode">
+           <property name="text">
+            <string>UNKNOWN</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupCommands">
+        <property name="title">
+         <string>Командный контур НСУ (Безопасный режим - Вариант 3)</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayoutCommands">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayoutAlt">
+           <item>
+            <widget class="QLabel" name="lblTargetAlt">
+             <property name="text">
+              <string>Целевая высота взлета:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="spinTakeoffAltitude">
+             <property name="suffix">
+              <string> м</string>
+             </property>
+             <property name="decimals">
+              <number>0</number>
+             </property>
+             <property name="minimum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>500.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>50.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayoutCmdBtns">
+           <item>
+            <widget class="QPushButton" name="btnTakeoff">
+             <property name="text">
+              <string>Взлет</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnLand">
+             <property name="text">
+              <string>Посадка</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnStopCommand">
+             <property name="text">
+              <string>Стоп</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelCommandStatus">
+           <property name="text">
+            <string>Статус: ожидание команд</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QListWidget" name="listCommandLog"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupSimulator">
+        <property name="title">
+         <string>Управление эмулятором БПЛА и имитация отказов</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayoutSim">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayoutSimBtns1">
+           <item>
+            <widget class="QPushButton" name="btnStartUav">
+             <property name="text">
+              <string>Запустить эмулятор БПЛА</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnDisconnectUav">
+             <property name="text">
+              <string>Отключить БПЛА</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayoutSimBtns2">
+           <item>
+            <widget class="QPushButton" name="btnCorruptPacket">
+             <property name="text">
+              <string>Повредить пакет</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnSkipPackets">
+             <property name="text">
+              <string>Пропустить 2 пакета</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="chkSuppressAck">
+           <property name="text">
+            <string>Не отправлять COMMAND_ACK (тест таймаута 3 с)</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayoutRight" stretch="2,2,1">
+      <item>
+       <widget class="QChartView" name="chartView"/>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupTelemetryTable">
+        <property name="title">
+         <string>Таблица телеметрии (Вариант 3 Задания 2 - не чаще 1 раза/с, до 200 строк)</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayoutTable">
+         <item>
+          <widget class="QTableWidget" name="tableTelemetry">
+           <column>
+            <property name="text">
+             <string>Время</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>System ID</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Component ID</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Широта</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Долгота</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Высота</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Режим</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupEventLog">
+        <property name="title">
+         <string>Журнал сетевых событий (Вариант 3 Задания 1)</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayoutEventLog">
+         <item>
+          <widget class="QListWidget" name="listNetworkEvents"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QChartView</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">QtCharts/QChartView</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
